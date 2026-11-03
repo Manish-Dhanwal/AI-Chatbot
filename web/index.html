@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Banking Chatbot</title>
+  <style>
+    :root {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #16233b;
+      background: #f5f7fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      --blue: #315ee8;
+      --muted: #75819a;
+      --line: #e8ecf3;
+    }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; padding: 34px 22px; display: grid; place-items: center; background: radial-gradient(ellipse at 50% -20%, #e5ecff 0, transparent 48%), #f5f7fb; }
+    button, input { font: inherit; }
+    .shell { width: min(100%, 1020px); height: min(780px, calc(100vh - 68px)); min-height: 540px; display: grid; grid-template-columns: 270px minmax(0, 1fr); overflow: hidden; background: #fff; border: 1px solid #e7ebf3; border-radius: 24px; box-shadow: 0 28px 90px #293e6618, 0 3px 12px #293e6608; }
+    .sidebar { display: flex; flex-direction: column; padding: 27px 20px; color: #e9eeff; background: linear-gradient(160deg, #172c61 0%, #152554 55%, #101d42 100%); }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 5px; }
+    .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #ffffff30; border-radius: 12px; color: #fff; background: #ffffff18; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 18px; font-weight: 800; }
+    .brand-name { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: -.3px; }
+    .brand-caption { margin-top: 2px; color: #aebbe0; font-size: 11px; }
+    .side-label { margin: 48px 8px 12px; color: #91a1cd; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .side-card { padding: 15px; border: 1px solid #ffffff1c; border-radius: 15px; background: #ffffff0c; }
+    .secure-icon { width: 32px; height: 32px; display: grid; place-items: center; margin-bottom: 13px; border-radius: 10px; color: #9eb5ff; background: #809cff20; font-size: 16px; }
+    .side-card strong { display: block; margin-bottom: 5px; color: #fff; font-size: 13px; }
+    .side-card p { margin: 0; color: #b3bfdf; font-size: 11px; line-height: 1.55; }
+    .side-bottom { margin-top: auto; padding: 14px 9px 0; border-top: 1px solid #ffffff1a; color: #aab7d9; font-size: 11px; line-height: 1.6; }
+    .side-bottom span { display: inline-block; margin-right: 5px; color: #68d6a5; }
+    .main { min-width: 0; display: flex; flex-direction: column; background: #fff; }
+    .topbar { height: 78px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid var(--line); }
+    .top-title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: -.25px; }
+    .top-subtitle { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .online { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid #e6f1eb; border-radius: 999px; color: #39785c; background: #f4fbf7; font-size: 10px; font-weight: 600; }
+    .online-dot { width: 6px; height: 6px; border-radius: 50%; background: #44b77a; box-shadow: 0 0 0 3px #44b77a1c; }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 17px; padding: 30px clamp(20px, 5vw, 54px); scroll-behavior: smooth; }
+    .welcome { max-width: 470px; margin: 22px auto 4px; text-align: center; }
+    .welcome-icon { width: 54px; height: 54px; display: grid; place-items: center; margin: 0 auto 16px; border: 1px solid #e5ebff; border-radius: 18px; color: #315ee8; background: linear-gradient(145deg, #f4f7ff, #eaf0ff); font-size: 23px; box-shadow: 0 8px 20px #315ee814; }
+    .welcome h1 { margin: 0; color: #182540; font-family: ui-sans-serif, system-ui, sans-serif; font-size: clamp(22px, 3vw, 28px); font-weight: 800; letter-spacing: -1px; }
+    .welcome p { margin: 9px auto 21px; color: #77839a; font-size: 13px; line-height: 1.6; }
+    .suggestions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+    .suggestion { padding: 9px 12px; border: 1px solid #e7ebf3; border-radius: 999px; color: #53627e; background: #fff; font-size: 11px; cursor: pointer; transition: .18s ease; }
+    .suggestion:hover { border-color: #b9c8ff; color: #315ee8; background: #f8faff; transform: translateY(-1px); }
+    .message { max-width: min(78%, 490px); padding: 13px 16px; border-radius: 17px; font-size: 13px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; animation: appear .18s ease-out; }
+    @keyframes appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .assistant { align-self: flex-start; border: 1px solid #e9edf4; border-bottom-left-radius: 5px; color: #35425c; background: #f6f8fb; }
+    .source { margin-top: 10px; padding-top: 9px; border-top: 1px solid #e1e6ef; color: #68758e; font-size: 11px; }
+    .source summary { color: #43516d; font-weight: 700; cursor: pointer; }
+    .source p { margin: 7px 0 0; white-space: pre-wrap; }
+    .user { align-self: flex-end; border-bottom-right-radius: 5px; color: #fff; background: linear-gradient(135deg, #416df0, #3157d6); box-shadow: 0 5px 12px #315ee829; }
+    .error { align-self: flex-start; border: 1px solid #f7dede; color: #923939; background: #fff6f6; }
+    .composer-wrap { padding: 0 clamp(18px, 5vw, 54px) 21px; }
+    .demo-note { margin: 0 0 10px; color: #9aa4b6; font-size: 10px; text-align: center; }
+    .composer { display: flex; align-items: center; gap: 10px; padding: 7px 8px 7px 16px; border: 1px solid #e1e6ef; border-radius: 16px; background: #fff; box-shadow: 0 6px 20px #2034560b; transition: .18s ease; }
+    .composer:focus-within { border-color: #aebfff; box-shadow: 0 0 0 4px #315ee810, 0 6px 20px #2034560b; }
+    input { min-width: 0; flex: 1; padding: 10px 0; border: 0; outline: 0; color: #1b2944; background: transparent; font-size: 13px; }
+    input::placeholder { color: #a3adbd; }
+    .send { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 12px; color: #fff; background: var(--blue); cursor: pointer; transition: .18s ease; }
+    .send:hover { background: #244dcc; transform: translateY(-1px); }
+    .send:disabled { cursor: wait; opacity: .55; transform: none; }
+    .send svg { width: 17px; height: 17px; }
+    @media (max-width: 680px) {
+      body { padding: 0; }
+      .shell { width: 100%; height: 100dvh; min-height: 0; grid-template-columns: 1fr; border: 0; border-radius: 0; }
+      .sidebar { display: none; }
+      .topbar { height: 68px; padding: 0 19px; }
+      #messages { padding: 24px 18px; }
+      .welcome { margin-top: 28px; }
+      .composer-wrap { padding: 0 15px 15px; }
+      .message { max-width: 88%; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell" aria-label="Banking chatbot">
+    <aside class="sidebar" aria-label="Assistant information">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">B</div>
+        <div><div class="brand-name">Banking Chatbot</div><div class="brand-caption">Your digital banking assistant</div></div>
+      </div>
+      <div class="side-label">Your privacy</div>
+      <div class="side-card">
+        <div class="secure-icon" aria-hidden="true">✦</div>
+        <strong>A safe space to ask</strong>
+        <p>This is a learning demo. Please don’t enter passwords, account numbers, or real personal information.</p>
+      </div>
+      <div class="side-bottom"><span>●</span> Demo environment<br>Answers use a local AI model and fictional bank FAQ.</div>
+    </aside>
+
+    <section class="main" aria-label="Chat">
+      <header class="topbar">
+        <div><div class="top-title">Assistant</div><div class="top-subtitle">Here to help with your banking questions</div></div>
+        <div class="online"><span class="online-dot"></span> Online</div>
+      </header>
+
+      <section id="messages" aria-live="polite" aria-label="Conversation">
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon" aria-hidden="true">✦</div>
+          <h1>How can I help today?</h1>
+          <p>Ask a question and I’ll do my best to point you in the right direction.</p>
+          <div class="suggestions" aria-label="Suggested questions">
+            <button class="suggestion" type="button">How do I report a lost card?</button>
+            <button class="suggestion" type="button">Where can I find my transactions?</button>
+            <button class="suggestion" type="button">How do disputes work?</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="composer-wrap">
+        <p class="demo-note">Learning demo · Don’t share real banking or personal information</p>
+        <form class="composer" id="chat-form">
+          <input id="message-input" name="message" type="text" placeholder="Write your message…" autocomplete="off" maxlength="2000" required aria-label="Your message">
+          <button class="send" id="send-button" type="submit" aria-label="Send message">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 12 19 5l-4.4 14-3.1-5.4L4.5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m11.5 13.6 4.2-4.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector("#chat-form");
+    const input = document.querySelector("#message-input");
+    const sendButton = document.querySelector("#send-button");
+    const messages = document.querySelector("#messages");
+    const welcome = document.querySelector("#welcome");
+    const conversationStorageKey = "banking-chat-conversation-id";
+    let conversationId = sessionStorage.getItem(conversationStorageKey);
+    if (!conversationId) {
+      conversationId = crypto.randomUUID();
+      sessionStorage.setItem(conversationStorageKey, conversationId);
+    }
+
+    function addMessage(text, kind) {
+      const message = document.createElement("div");
+      message.className = `message ${kind}`;
+      message.textContent = text;
+      messages.append(message);
+      messages.scrollTop = messages.scrollHeight;
+      return message;
+    }
+
+    function addAssistantMessage(reply, source) {
+      const message = addMessage(reply, "assistant");
+      if (!source) return;
+
+      const details = document.createElement("details");
+      details.className = "source";
+      const summary = document.createElement("summary");
+      summary.textContent = "Show FAQ source";
+      const sourceText = document.createElement("p");
+      sourceText.textContent = source;
+      details.append(summary, sourceText);
+      message.append(details);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function sendMessage(text) {
+      const message = text.trim();
+      if (!message || sendButton.disabled) return;
+
+      welcome?.remove();
+      addMessage(message, "user");
+      input.value = "";
+      sendButton.disabled = true;
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversation_id: conversationId, message }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "The request failed.");
+        addAssistantMessage(result.reply, result.source);
+      } catch (error) {
+        addMessage(error.message || "Could not reach the chat service.", "error");
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      sendMessage(input.value);
+    });
+
+    document.querySelectorAll(".suggestion").forEach((button) => {
+      button.addEventListener("click", () => sendMessage(button.textContent));
+    });
+  </script>
+</body>
+</html>
